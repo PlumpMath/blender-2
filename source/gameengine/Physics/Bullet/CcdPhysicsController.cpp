@@ -506,7 +506,7 @@ bool CcdPhysicsController::CreateSoftbody()
 					btSoftBody::tNodeArray& nodes(psb->m_nodes);
 					btVector3 xyz = ToBullet(vertex->xyz());
 					for (int n = 0; n < nodes.size(); n++) {
-						btScalar distSqr = (nodes[n].m_x - xyz).length2();
+						btScalar distSqr = (nodes[n].m_x - xyz).LengthSquared();
 						if (distSqr < maxDistSqr) {
 							maxDistSqr = distSqr;
 
@@ -719,7 +719,7 @@ void CcdPhysicsController::SimulationTick(float timestep)
 	// Clamp linear velocity
 	if (m_cci.m_clamp_vel_max > 0.0f || m_cci.m_clamp_vel_min > 0.0f) {
 		const btVector3 &linvel = body->getLinearVelocity();
-		btScalar len = linvel.length();
+		btScalar len = linvel.Length();
 
 		if (m_cci.m_clamp_vel_max > 0.0f && len > m_cci.m_clamp_vel_max)
 			body->setLinearVelocity(linvel * (m_cci.m_clamp_vel_max / len));
@@ -730,7 +730,7 @@ void CcdPhysicsController::SimulationTick(float timestep)
 	// Clamp angular velocity
 	if (m_cci.m_clamp_angvel_max > 0.0f || m_cci.m_clamp_angvel_min > 0.0f) {
 		const btVector3 &angvel = body->getAngularVelocity();
-		btScalar len = angvel.length();
+		btScalar len = angvel.Length();
 
 		if (m_cci.m_clamp_angvel_max > 0.0f && len > m_cci.m_clamp_angvel_max)
 			body->setAngularVelocity(angvel * (m_cci.m_clamp_angvel_max / len));
@@ -1149,7 +1149,7 @@ void CcdPhysicsController::ApplyTorque(const MT_Vector3&  torquein, bool local)
 	btTransform xform = m_object->getWorldTransform();
 
 
-	if (m_object && torque.length2() > (SIMD_EPSILON * SIMD_EPSILON)) {
+	if (m_object && torque.LengthSquared() > (SIMD_EPSILON * SIMD_EPSILON)) {
 		btRigidBody *body = GetRigidBody();
 		m_object->activate();
 		if (m_object->isStaticObject()) {
@@ -1181,7 +1181,7 @@ void CcdPhysicsController::ApplyForce(const MT_Vector3& forcein, bool local)
 {
 	btVector3 force = ToBullet(forcein);
 
-	if (m_object && force.length2() > (SIMD_EPSILON * SIMD_EPSILON)) {
+	if (m_object && force.LengthSquared() > (SIMD_EPSILON * SIMD_EPSILON)) {
 		m_object->activate();
 		if (m_object->isStaticObject()) {
 			if (!m_cci.m_bSensor)
@@ -1210,7 +1210,7 @@ void CcdPhysicsController::SetAngularVelocity(const MT_Vector3& ang_vel, bool lo
 	btVector3 angvel = ToBullet(ang_vel);
 
 	/* Refuse tiny tiny velocities, as they might cause instabilities. */
-	float vel_squared = angvel.length2();
+	float vel_squared = angvel.LengthSquared();
 	if (vel_squared > 0.0f && vel_squared <= (SIMD_EPSILON * SIMD_EPSILON))
 		angvel = btVector3(0.0f, 0.0f, 0.0f);
 
@@ -1235,7 +1235,7 @@ void CcdPhysicsController::SetLinearVelocity(const MT_Vector3& lin_vel, bool loc
 	btVector3 linVel = ToBullet(lin_vel);
 
 	/* Refuse tiny tiny velocities, as they might cause instabilities. */
-	float vel_squared = linVel.length2();
+	float vel_squared = linVel.LengthSquared();
 	if (vel_squared > 0.0f && vel_squared <= (SIMD_EPSILON * SIMD_EPSILON))
 		linVel = btVector3(0.0f, 0.0f, 0.0f);
 
@@ -1270,7 +1270,7 @@ void CcdPhysicsController::ApplyImpulse(const MT_Vector3& attach, const MT_Vecto
 	btVector3 pos;
 	btVector3 impulse = ToBullet(impulsein);
 
-	if (m_object && impulse.length2() > (SIMD_EPSILON * SIMD_EPSILON)) {
+	if (m_object && impulse.LengthSquared() > (SIMD_EPSILON * SIMD_EPSILON)) {
 		m_object->activate();
 		if (m_object->isStaticObject()) {
 			if (!m_cci.m_bSensor)

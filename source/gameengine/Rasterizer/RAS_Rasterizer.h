@@ -63,6 +63,7 @@ struct KX_ClientObjectInfo;
 class KX_RayCast;
 
 struct GPUShader;
+struct GPUUniformBuffer;
 
 /**
  * 3D rendering device context interface. 
@@ -317,6 +318,9 @@ private:
 	float m_focallength;
 	bool m_setfocallength;
 	int m_noOfScanlines;
+
+	/* Light ubo */
+	GPUUniformBuffer *m_lightUbo;
 
 	/* motion blur */
 	unsigned short m_motionblur;
@@ -740,7 +744,7 @@ public:
 	        int fontid, const std::string& text, int size, int dpi,
 	        const float color[4], const float mat[16], float aspect);
 
-	//void ProcessLighting(bool uselights, const MT_Transform &trans);
+	void ProcessLighting(bool uselights, const MT_Transform &trans, RAS_MeshSlot *ms);
 
 	void PushMatrix();
 	void PopMatrix();

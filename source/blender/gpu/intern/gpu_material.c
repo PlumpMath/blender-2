@@ -2461,11 +2461,11 @@ GPUMaterial *GPU_material_from_eevee(Scene *scene, Material *ma,
 
 	if (ma->nodetree && ma->use_nodes) {
 		/* create nodes */
-		GPU_nodes_get_vertex_attributes(&mat->nodes, &mat->attribs);
 		ntreeGPUMaterialNodes(ma->nodetree, mat, NODE_NEWER_SHADING);
 		/* Let Draw manager finish the construction. */
 		if (mat->outlink) {
 			outlink = mat->outlink;
+			GPU_nodes_get_vertex_attributes(&mat->nodes, &mat->attribs);
 			mat->pass = GPU_generate_pass_new(&mat->nodes, outlink, vert_code, geom_code, frag_lib, defines);
 		}
 	}

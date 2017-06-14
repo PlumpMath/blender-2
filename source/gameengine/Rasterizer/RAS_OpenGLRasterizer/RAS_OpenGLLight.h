@@ -31,10 +31,21 @@ class RAS_Rasterizer;
 struct GPULamp;
 struct Image;
 
+/* ************ LIGHT UBO ************* */
+typedef struct EEVEE_Light {
+	float position[3], dist;
+	float color[3], spec;
+	float spotsize, spotblend, radius, shadowid;
+	float rightvec[3], sizex;
+	float upvec[3], sizey;
+	float forwardvec[3], lamptype;
+} EEVEE_Light;
+
 class RAS_OpenGLLight : public RAS_ILightObject
 {
 
 	RAS_Rasterizer *m_rasterizer;
+	EEVEE_Light m_lightData;
 
 	GPULamp *GetGPULamp();
 
@@ -49,6 +60,7 @@ public:
 		return new RAS_OpenGLLight(*this);
 	}
 
+	EEVEE_Light GetEeveeLightData();
 	bool HasShadowBuffer();
 	bool NeedShadowUpdate();
 	int GetShadowBindCode();

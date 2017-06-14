@@ -140,9 +140,9 @@ void BL_BlenderShader::ReloadMaterial()
 	BLI_dynstr_free(ds_frag);
 
 	/* Get the material from eevee */
-	m_gpuMat = (m_mat) ? GPU_material_from_eevee(m_blenderScene, m_mat, datatoc_lit_surface_vert_glsl, NULL, fraglib,
+	m_gpuMat = (m_mat) ? GPU_material_from_eevee(m_blenderScene, m_mat, datatoc_lit_surface_vert_glsl, nullptr, fraglib,
 		"#define EEVEE_ENGINE\n"
-		"#define PROBE_CAPTURE\n"
+		"#define MESH_SHADER\n"
 		"#define MAX_PROBE 128\n"
 		"#define MAX_LIGHT 128\n"
 		"#define MAX_SHADOW_CUBE 42\n"

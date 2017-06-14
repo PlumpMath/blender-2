@@ -67,7 +67,8 @@ RAS_MeshSlot::RAS_MeshSlot()
 	m_pDerivedMesh(nullptr),
 	m_meshUser(nullptr),
 	m_batchPartIndex(-1),
-	m_gpuMat(nullptr)
+	m_gpuMat(nullptr),
+	m_gpuShader(nullptr)
 {
 }
 
@@ -89,7 +90,8 @@ RAS_MeshSlot::RAS_MeshSlot(const RAS_MeshSlot& slot)
 	m_pDerivedMesh(nullptr),
 	m_meshUser(nullptr),
 	m_batchPartIndex(-1),
-	m_gpuMat(nullptr)
+	m_gpuMat(nullptr),
+	m_gpuShader(nullptr)
 {
 	if (m_displayArrayBucket) {
 		m_displayArrayBucket->AddRef();
@@ -170,6 +172,11 @@ GPUMaterial *RAS_MeshSlot::GetGpuMat()
 	return m_gpuMat;
 }
 
+GPUShader *RAS_MeshSlot::GetGpuShader()
+{
+	return m_gpuShader;
+}
+
 void RAS_MeshSlot::GenerateTree(RAS_DisplayArrayUpwardNode& root, RAS_UpwardTreeLeafs& leafs)
 {
 	m_node.SetParent(&root);
@@ -187,7 +194,6 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 
 
 	if (!managerData->m_shaderOverride) {
-		//rasty->ProcessLighting(materialData->m_useLighting, managerData->m_trans);
 		materialData->m_material->ActivateMeshSlot(this, rasty);
 	}
 
@@ -231,22 +237,52 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 		GPUMaterial *gpumat = GetGpuMat();
 		if (gpumat && !(rasty->GetDrawingMode() & RAS_Rasterizer::RAS_SHADOW) && (rasty->GetDrawingMode() != 0)) {
 			GPUPass *pass = GPU_material_get_pass(gpumat);
-			GPUShader *shader = GPU_pass_shader(pass);
-			GPU_shader_bind(shader);
+			m_gpuShader = GPU_pass_shader(pass);
+			GPU_shader_bind(m_gpuShader);
 
 			/* uniforms */
-			int loc = GPU_shader_get_uniform(shader, "WorldNormalMatrix");
-			MT_Matrix4x4 modelview(m_meshUser->GetMatrix());
-			MT_Matrix4x4 worldnorm4(modelview.inverse().transposed());
-			float m[9];
+
+			// Lights
+			rasty->ProcessLighting(materialData->m_useLighting, managerData->m_trans, this);
+
+			// Others
+			
+			int modelloc = GPU_shader_get_uniform(m_gpuShader, "ModelMatrix");
+			int modelviewloc = GPU_shader_get_uniform(m_gpuShader, "ModelViewMatrix");
+			int viewinvloc = GPU_shader_get_uniform(m_gpuShader, "ViewMatrixInverse");
+			int worldnormloc = GPU_shader_get_uniform(m_gpuShader, "WorldNormalMatrix");
+			int normloc = GPU_shader_get_uniform(m_gpuShader, "NormalMatrix");
+			
+			
+			MT_Matrix4x4 viewinv(rasty->GetViewInvMatrix());
+			MT_Matrix4x4 model(m_meshUser->GetMatrix());
+			MT_Matrix4x4 modelview(model * rasty->GetViewMatrix());
+			MT_Matrix4x4 worldnorm(model.inverse().transposed());
+			MT_Matrix4x4 norm(worldnorm * viewinv);
+
+			float modelf[16];
+			float modelviewf[16];
+			float viewinvf[16];
+			float worldnormf[9];
+			float normf[9];
+			
+			model.getValue(modelf);
+			viewinv.getValue(viewinvf);
+			modelview.getValue(modelviewf);
 			int k = 0;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					m[k] = worldnorm4[i][j];
+					worldnormf[k] = worldnorm[i][j];
+					normf[k] = norm[i][j];
 					k++;
 				}
 			}
-			GPU_shader_uniform_vector(shader, loc, 9, 1, (float *)m);
+
+			GPU_shader_uniform_vector(m_gpuShader, modelloc, 16, 1, (float *)modelf);
+			GPU_shader_uniform_vector(m_gpuShader, modelviewloc, 16, 1, (float *)modelviewf);
+			GPU_shader_uniform_vector(m_gpuShader, viewinvloc, 16, 1, (float *)viewinvf);
+			GPU_shader_uniform_vector(m_gpuShader, worldnormloc, 9, 1, (float *)worldnormf);
+			GPU_shader_uniform_vector(m_gpuShader, normloc, 9, 1, (float *)normf);
 		}
 		rasty->IndexPrimitives(displayArrayData->m_storageInfo);
 	}

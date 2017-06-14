@@ -175,7 +175,7 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 
 	if (materialData->m_zsort && managerData->m_drawingMode >= RAS_Rasterizer::RAS_SOLID && displayArrayData->m_storageInfo) {
 		RAS_IStorageInfo *storage = displayArrayData->m_storageInfo;
-		m_mesh->SortPolygons(this, managerData->m_trans * mt::trans(m_meshUser->GetMatrix()), storage->GetIndexMap());
+		m_mesh->SortPolygons(this, managerData->m_trans * mt::mat4x3(m_meshUser->GetMatrix()), storage->GetIndexMap());
 		storage->FlushIndexMap();
 	}
 

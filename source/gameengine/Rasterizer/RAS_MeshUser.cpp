@@ -42,6 +42,9 @@ RAS_MeshUser::RAS_MeshUser(void *clientobj)
 
 RAS_MeshUser::~RAS_MeshUser()
 {
+	for (RAS_MeshSlot *ms : m_meshSlots) {
+		delete ms;
+	}
 	m_meshSlots.clear();
 
 	if (m_boundingBox) {

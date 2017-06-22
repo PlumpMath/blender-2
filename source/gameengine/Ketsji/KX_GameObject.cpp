@@ -1782,12 +1782,12 @@ static int mathutils_kxgameob_matrix_set(BaseMathObject *bmo, int subtype)
 	mt::mat3 mat3x3;
 	switch (subtype) {
 		case MATHUTILS_MAT_CB_ORI_LOCAL:
-			mat3x3.setValue3x3(bmo->data);
+			mat3x3 = mt::mat3(bmo->data);
 			self->NodeSetLocalOrientation(mat3x3);
 			self->NodeUpdateGS(0.f);
 			break;
 		case MATHUTILS_MAT_CB_ORI_GLOBAL:
-			mat3x3.setValue3x3(bmo->data);
+			mat3x3 = mt::mat3(bmo->data);
 			self->NodeSetLocalOrientation(mat3x3);
 			self->NodeUpdateGS(0.f);
 			break;
@@ -2752,9 +2752,7 @@ int KX_GameObject::pyattr_set_localTransform(PyObjectPlus *self_v, const KX_PYAT
 
 	self->NodeSetLocalPosition(mt::vec3(loc));
 
-	//mt::mat3's constructor expects a 4x4 matrix
-	orientation = mt::mat3();
-	orientation.setValue3x3(*rot);
+	orientation = mt::mat3(rot);
 	self->NodeSetLocalOrientation(orientation);
 
 	self->NodeSetLocalScale(mt::vec3(size));
@@ -2786,9 +2784,7 @@ int KX_GameObject::pyattr_set_worldTransform(PyObjectPlus *self_v, const KX_PYAT
 
 	self->NodeSetWorldPosition(mt::vec3(loc));
 
-	//mt::mat3's constructor expects a 4x4 matrix
-	orientation = mt::mat3();
-	orientation.setValue3x3(*rot);
+	orientation = mt::mat3(*rot);
 	self->NodeSetGlobalOrientation(orientation);
 
 	self->NodeSetWorldScale(mt::vec3(size));
